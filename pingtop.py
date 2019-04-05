@@ -25,7 +25,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 WAIT_TIME = 1  # seconds
-hosts = {"baidu.com": {}, "alipay.com": {}}
+hosts = {
+    "baidu.com": {},
+    "alipay.com": {},
+    "google.com": {},
+    "kawabangga.com": {},
+    "weibo.com": {},
+    "qq.com": {},
+    "taobao.com": {},
+}
 event = threading.Event()
 
 screen = urwid.raw_display.Screen()
@@ -61,7 +69,7 @@ COLUMNS = [
         "real_rtt",
         label="RTT(ms)",
         width=10,
-        align="left",
+        align="right",
         sort_reverse=True,
         sort_icon=False,
         padding=1,
@@ -70,7 +78,7 @@ COLUMNS = [
         "min_rtt",
         label="Min",
         width=10,
-        align="left",
+        align="right",
         sort_reverse=True,
         sort_icon=False,
         padding=1,
@@ -79,7 +87,7 @@ COLUMNS = [
         "avg_rtt",
         label="Avg",
         width=10,
-        align="left",
+        align="right",
         sort_reverse=True,
         sort_icon=False,
         padding=1,
@@ -88,7 +96,7 @@ COLUMNS = [
         "max_rtt",
         label="Max",
         width=10,
-        align="left",
+        align="right",
         sort_reverse=True,
         sort_icon=False,
         padding=1,
@@ -97,7 +105,7 @@ COLUMNS = [
         "lost",
         label="LOSS",
         width=10,
-        align="left",
+        align="right",
         sort_reverse=True,
         sort_icon=False,
         padding=1,
@@ -211,6 +219,7 @@ def forever_ping(dest, index_flag):
     global hosts
     global event
     while event.is_set():
+        logging.info(f"ping {dest}, {index_flag}")
         delay = do_one(dest, 1, 64, index_flag)
         dest_attr = hosts[dest]
         dest_attr.setdefault("seq", 1)
@@ -219,17 +228,17 @@ def forever_ping(dest, index_flag):
             hosts[dest].setdefault("lost", 0)
             hosts[dest]["lost"] += 1
         else:
-            delay_ms = delay * 1000
-            dest_attr.setdefault("rtts", []).append(delay)
-            dest_attr["real_rtt"] = delay
+            delay_ms = int(delay * 1000)
+            dest_attr.setdefault("rtts", []).append(delay_ms)
+            dest_attr["real_rtt"] = delay_ms
             dest_attr["min_rtt"] = min(dest_attr["rtts"])
             dest_attr["max_rtt"] = max(dest_attr["rtts"])
-            dest_attr["avg_rtt"] = sum(dest_attr["rtts"]) / dest_attr["seq"]
-        sleep_time = WAIT_TIME - delay
+            dest_attr["avg_rtt"] = "%.1f" % (sum(dest_attr["rtts"]) / dest_attr["seq"])
+        sleep_time = WAIT_TIME - delay if delay else 0
         logger.info(f"Sleep for seconds {sleep_time}")
         time.sleep(sleep_time)
 
-        tablebox.table.reset()
+        tablebox.table.reset(reset_sort=False)
 
 
 def _raise_error(future):
@@ -243,10 +252,13 @@ def screen_painter():
         mainloop.draw_screen()
         time.sleep(.01)
 
+
 @click.command()
 def multi_ping():
     global hosts
-    pool = ThreadPoolExecutor(max_workers=len(hosts)+1)
+    logger.info(f"----------")
+    logger.info(len(hosts) + 10)
+    pool = ThreadPoolExecutor(max_workers=len(hosts) + 10)
     event.set()
     for index, host in zip(range(len(hosts)), hosts):
         future = pool.submit(forever_ping, host, index)
