@@ -62,8 +62,9 @@ class PingDataTable(DataTable):
     def __init__(self, num_rows=10, *args, **kwargs):
         self.num_rows = num_rows
         # indexes = random.sample(range(self.num_rows*2), num_rows)
+        self.one = {"host": "www.baidu.com", "real_rtt": 100}
         self.query_data = [
-            {"host": "www.baidu.com", "real_rtt": 100},
+            self.one,
             {"host": "www.google.com", "real_rtt": 200},
         ]
 
