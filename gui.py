@@ -9,7 +9,6 @@ from urwid_utils.palette import *
 import os
 import random
 import string
-from optparse import OptionParser
 
 screen = urwid.raw_display.Screen()
 # screen.set_terminal_properties(1<<24)
@@ -21,30 +20,7 @@ NORMAL_BG_16 = "black"
 NORMAL_FG_256 = "light gray"
 NORMAL_BG_256 = "g0"
 
-
-def main():
-    parser = OptionParser()
-    parser.add_option("-v", "--verbose", action="count", default=0),
-    (options, args) = parser.parse_args()
-
-    if options.verbose:
-        formatter = logging.Formatter(
-            "%(asctime)s [%(levelname)8s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
-        )
-        fh = logging.FileHandler("datatable.log")
-        # fh.setLevel(logging.DEBUG)
-        fh.setFormatter(formatter)
-        if options.verbose > 1:
-            logger.setLevel(logging.DEBUG)
-            logging.getLogger("urwid_datatable").setLevel(logging.DEBUG)
-        else:
-            logger.setLevel(logging.INFO)
-            logging.getLogger("urwid_datatable").setLevel(logging.INFO)
-        logger.addHandler(fh)
-        logging.getLogger("urwid_datatable").addHandler(fh)
-        # logging.getLogger("raccoon.dataframe").setLevel(logging.DEBUG)
-        # logging.getLogger("raccoon.dataframe").addHandler(fh)
-
+def get_palette():
     attr_entries = {}
     for attr in ["dark red", "dark green", "dark blue"]:
         attr_entries[attr.split()[1]] = PaletteEntry(
@@ -52,9 +28,11 @@ def main():
         )
     entries = DataTable.get_palette_entries(user_entries=attr_entries)
     palette = Palette("default", **entries)
+    return palette
 
+
+def main():
     COLUMNS = [
-        # DataTableColumn("uniqueid", width=10, align="right", padding=1),
         DataTableColumn(
             "foo",
             label="Foo",
@@ -73,7 +51,7 @@ def main():
             sort_reverse=True,
             sort_icon=False,
             padding=1,
-        ),  # margin=5),
+        ),
         DataTableColumn("baz", label="Baz!", width=("weight", 1)),
         DataTableColumn(
             "qux",
@@ -81,7 +59,6 @@ def main():
             width=5,
             hide=True,
         ),
-        # DataTableColumn("empty", label="empty", width=5),
     ]
 
     class ExampleDataTable(DataTable):
@@ -204,7 +181,6 @@ def main():
             elif key == "ctrl s":
                 self.save("test.json")
             elif key == "0":
-                # self.sort_by_column(self.index, toggle=True)
                 self.sort_sorindex()
             elif key == "a":
                 self.add_row(self.random_row(self.last_rec))
@@ -329,7 +305,7 @@ def main():
         with_scrollbar=True,
         border=(1, "\N{VERTICAL LINE}", "blue"),
         padding=3,
-        with_footer=True,
+        with_footer=False,
     )
 
     def global_input(key):
@@ -347,7 +323,7 @@ def main():
 
     main = urwid.MainLoop(
         urwid.Frame(urwid.Filler(tablebox)),
-        palette=palette,
+        palette=get_palette(),
         screen=screen,
         unhandled_input=global_input,
     )
