@@ -189,7 +189,7 @@ def send_one_ping(my_socket, dest_addr, id, psize):
     my_socket.sendto(packet, (dest_addr, 1))  # Don't know about the 1
 
 
-def do_one(dest_addr, timeout, psize):
+def do_one(dest_addr, timeout, psize, flag=0):
     """
     Returns either the delay (in seconds) or none on timeout.
     """
@@ -207,7 +207,9 @@ def do_one(dest_addr, timeout, psize):
             raise socket.error(msg)
         raise  # raise the original error
 
-    my_id = os.getpid() & 0xFFFF
+    process_pre = os.getpid() & 0xFF00
+    flag = flag & 0x00FF
+    my_id = process_pre | flag
 
     send_one_ping(my_socket, dest_addr, my_id, psize)
     delay = receive_one_ping(my_socket, my_id, timeout)
