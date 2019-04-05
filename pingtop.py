@@ -23,6 +23,7 @@ def forever_ping(dest, index_flag):
             hosts[dest]["lost"] += 1
         else:
             hosts[dest].setdefault("rtts", []).append(delay)
+        tablebox.table.requery()
         time.sleep(1)
 
 
