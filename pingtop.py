@@ -16,7 +16,6 @@ def forever_ping(dest, index_flag):
     global event
     while event.is_set():
         delay = do_one(dest, 1, 64, index_flag)
-        print(dest, "\t", delay * 1000)
         if delay is None:
             hosts[dest].setdefault("lost", 0)
             hosts[dest]["lost"] += 1
