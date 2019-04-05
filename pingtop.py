@@ -11,11 +11,11 @@ hosts = {"baidu.com": {}, "alipay.com": {}}
 event = threading.Event()
 
 
-def forever_ping(dest):
+def forever_ping(dest, index_flag):
     global hosts
     global event
     while event.is_set():
-        delay = do_one(dest, 1, 64)
+        delay = do_one(dest, 1, 64, index_flag)
         print(dest, "\t", delay * 1000)
         if delay is None:
             hosts[dest].setdefault("lost", 0)
@@ -31,8 +31,8 @@ def multi_ping():
     try:
         pool = ThreadPoolExecutor(max_workers=len(hosts))
         event.set()
-        for host in hosts:
-            last_future = pool.submit(forever_ping, host)
+        for index, host in zip(range(len(hosts)), hosts):
+            last_future = pool.submit(forever_ping, host, index)
         last_future.result()
     except KeyboardInterrupt:
         event.clear()
