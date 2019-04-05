@@ -1,39 +1,49 @@
 # -*- coding: utf-8 -*-
 
+import click
+import threading
+from concurrent.futures import ThreadPoolExecutor
+from ping import do_one
 import time
-import random
-import struct
-import select
-import socket
 
 
-# Credit: https://gist.github.com/pyos/10980172
-def chk(data):
-    x = sum(x << 8 if i % 2 else x for i, x in enumerate(data)) & 0xFFFFFFFF
-    x = (x >> 16) + (x & 0xFFFF)
-    x = (x >> 16) + (x & 0xFFFF)
-    return struct.pack("<H", ~x & 0xFFFF)
+hosts = {"baidu.com": {}, "alipay.com": {}}
+event = threading.Event()
 
 
-# From the same gist commented above, with minor modified.
-def ping(addr, timeout=1, udp=True, number=1, data=b""):
-    with socket.socket(
-        socket.AF_INET,
-        socket.SOCK_DGRAM if udp else socket.SOCK_RAW,
-        socket.IPPROTO_ICMP,
-    ) as conn:
-        payload = struct.pack("!HH", random.randrange(0, 65536), number) + data
+def forever_ping(dest):
+    global hosts
+    global event
+    while event.is_set():
+        delay = do_one(dest, 1, 64)
+        print(dest, "\t", delay * 1000)
+        if delay is None:
+            hosts[dest].setdefault("lost", 0)
+            hosts[dest]["lost"] += 1
+        else:
+            hosts[dest].setdefault("rtts", []).append(delay)
+        time.sleep(1)
 
-        conn.connect((addr, 80))
-        conn.sendall(b"\x08\0" + chk(b"\x08\0\0\0" + payload) + payload)
-        start = time.time()
 
-        while select.select([conn], [], [], max(0, start + timeout - time.time()))[0]:
-            data = conn.recv(65536)
-            if data[20:] == b"\0\0" + chk(b"\0\0\0\0" + payload) + payload:
-                return time.time() - start
+@click.command()
+def multi_ping():
+    global hosts
+    try:
+        pool = ThreadPoolExecutor(max_workers=len(hosts))
+        event.set()
+        for host in hosts:
+            last_future = pool.submit(forever_ping, host)
+        last_future.result()
+    except KeyboardInterrupt:
+        event.clear()
+        print("shutdown!")
+        for host in hosts:
+            print(host)
+            print(host, min(hosts[host]["rtts"]))
+    finally:
+        pool.shutdown(wait=False)
+        print("shuted!")
 
 
 if __name__ == "__main__":
-    for i in range(100):
-        print(i, ping("110.75.129.5") * 1000)
+    multi_ping()

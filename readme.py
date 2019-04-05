@@ -9,3 +9,8 @@ Column list:
 - lost: lost package count
 - seq: icmq_seq (aka, the total sent packages)
 - ttl: 
+
+
+## TODO
+
+- [ ] support count to stop
