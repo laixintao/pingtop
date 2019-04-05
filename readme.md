@@ -14,3 +14,6 @@ Column list:
 ## TODO
 
 - [ ] support count to stop
+- [ ] support all ping args
+- [ ] final summary
+- [ ] verbose to debug
