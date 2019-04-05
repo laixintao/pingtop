@@ -1,6 +1,6 @@
 # pingtop
 
-A top like TUI tool for ping mutiple server.
+A top like TUI tool for pinging mutiple servers.
 
 ![](doc/preview.png)
 
