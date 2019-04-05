@@ -72,7 +72,7 @@ class PingDataTable(DataTable):
 
     def query(self, sort=(None, None), offset=None, limit=None, load_all=False):
         return self.query_data
-    
+
     def query_result_count(self):
         return len(self.query_data)
 
@@ -106,44 +106,20 @@ class MainBox(urwid.WidgetWrap):
         super().__init__(self.box)
 
 
-def global_input(key):
-    if key in ("q", "Q"):
-        raise urwid.ExitMainLoop()
-    else:
-        return False
+tablebox = MainBox(
+    1000,
+    index="uniqueid",
+    sort_refocus=True,
+    sort_icons=False,
+    with_scrollbar=True,
+    border=(1, "\N{VERTICAL LINE}", "blue"),
+    padding=3,
+    with_footer=False,
+)
 
-
-def main():
-    tablebox = MainBox(
-        1000,
-        index="uniqueid",
-        sort_refocus=True,
-        sort_icons=False,
-        with_scrollbar=True,
-        border=(1, "\N{VERTICAL LINE}", "blue"),
-        padding=3,
-        with_footer=False,
-    )
-
-    old_signal_keys = screen.tty_signal_keys()
-    l = list(old_signal_keys)
-    l[0] = "undefined"
-    l[3] = "undefined"
-    l[4] = "undefined"
-    screen.tty_signal_keys(*l)
-
-    main = urwid.MainLoop(
-        urwid.Frame(urwid.Filler(tablebox)),
-        palette=get_palette(),
-        screen=screen,
-        unhandled_input=global_input,
-    )
-
-    try:
-        main.run()
-    finally:
-        screen.tty_signal_keys(*old_signal_keys)
-
-
-if __name__ == "__main__":
-    main()
+old_signal_keys = screen.tty_signal_keys()
+l = list(old_signal_keys)
+l[0] = "undefined"
+l[3] = "undefined"
+l[4] = "undefined"
+screen.tty_signal_keys(*l)
