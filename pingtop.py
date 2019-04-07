@@ -170,19 +170,18 @@ class MainBox(urwid.WidgetWrap):
         self.pile = urwid.Pile(
             [
                 ("pack", urwid.Text(label)),
-                ("pack", urwid.Divider("-")),
+                ("pack", urwid.Divider("\N{HORIZONTAL BAR}")),
                 ("weight", 1, self.table),
             ]
         )
-        self.box = urwid.BoxAdapter(urwid.LineBox(self.pile), 25)
-        super().__init__(self.box)
+        super().__init__(self.pile)
 
 
 tablebox = MainBox(
     1000,
     index="uniqueid",
     sort_refocus=True,
-    sort_icons=False,
+    sort_icons=True,
     with_scrollbar=True,
     border=(1, "\N{VERTICAL LINE}", "blue"),
     padding=3,
@@ -207,7 +206,7 @@ def global_input(key):
 
 
 mainloop = urwid.MainLoop(
-    urwid.Frame(urwid.Filler(tablebox)),
+    tablebox,
     palette=get_palette(),
     screen=screen,
     unhandled_input=global_input,
