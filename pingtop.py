@@ -206,10 +206,7 @@ def global_input(key):
 
 
 mainloop = urwid.MainLoop(
-    tablebox,
-    palette=get_palette(),
-    screen=screen,
-    unhandled_input=global_input,
+    tablebox, palette=get_palette(), screen=screen, unhandled_input=global_input
 )
 
 
@@ -248,7 +245,6 @@ def _raise_error(future):
 
 def screen_painter():
     while 1:
-        logger.info(f"Start drawing screen.")
         mainloop.draw_screen()
         time.sleep(.01)
 
