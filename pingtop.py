@@ -249,6 +249,7 @@ def _raise_error(future):
 
 def screen_painter():
     while 1:
+        logger.info(f"Start drawing screen.")
         mainloop.draw_screen()
         time.sleep(.01)
 
@@ -256,9 +257,9 @@ def screen_painter():
 @click.command()
 def multi_ping():
     global hosts
-    logger.info(f"----------")
-    logger.info(len(hosts) + 10)
-    pool = ThreadPoolExecutor(max_workers=len(hosts) + 10)
+    worker_num = len(hosts) + 10
+    logger.info(f"Open ThreadPoolExecutor with max_workers={worker_num}.")
+    pool = ThreadPoolExecutor(max_workers=worker_num)
     event.set()
     for index, host in zip(range(len(hosts)), hosts):
         future = pool.submit(forever_ping, host, index)
