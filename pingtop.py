@@ -8,6 +8,7 @@ import socket
 from concurrent.futures import ThreadPoolExecutor
 from ping import do_one
 import time
+import statistics
 
 import urwid
 from urwid_datatable import *
@@ -88,17 +89,26 @@ COLUMNS = [
     ),
     DataTableColumn(
         "avg_rtt",
-        label="Avg/Std",
-        width=10,
+        label="Avg",
+        width=6,
+        align="right",
+        sort_reverse=True,
+        sort_icon=False,
+        padding=0,
+    ),
+    DataTableColumn(
+        "max_rtt",
+        label="Max",
+        width=6,
         align="right",
         sort_reverse=True,
         sort_icon=False,
         padding=1,
     ),
     DataTableColumn(
-        "max_rtt",
-        label="Max",
-        width=6,
+        "std",
+        label="Std",
+        width=7,
         align="right",
         sort_reverse=True,
         sort_icon=False,
@@ -237,6 +247,7 @@ def forever_ping(dest, index_flag):
     dest_attr.setdefault("min_rtt", "N/A")
     dest_attr.setdefault("max_rtt", "N/A")
     dest_attr.setdefault("avg_rtt", "N/A")
+    dest_attr.setdefault("std", "N/A")
     rtts = dest_attr.setdefault("rtts", [])
 
     while event.is_set():
@@ -254,6 +265,8 @@ def forever_ping(dest, index_flag):
             dest_attr["min_rtt"] = min(dest_attr["rtts"])
             dest_attr["max_rtt"] = max(dest_attr["rtts"])
             dest_attr["avg_rtt"] = "%.1f" % (sum(dest_attr["rtts"]) / dest_attr["seq"])
+            if len(rtts) >= 2:
+                dest_attr["std"] = "%2.1f" % (statistics.stdev(rtts))
         sleep_time = WAIT_TIME - delay if delay else 0
         logger.info(f"{dest}({dest_ip})Sleep for seconds {sleep_time}")
         time.sleep(sleep_time)
