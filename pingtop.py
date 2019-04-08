@@ -25,15 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 WAIT_TIME = 1  # seconds
-hosts = {
-    "baidu.com": {},
-    "alipay.com": {},
-    "google.com": {},
-    "kawabangga.com": {},
-    "weibo.com": {},
-    "qq.com": {},
-    "taobao.com": {},
-}
+hosts = {}
 event = threading.Event()
 
 screen = urwid.raw_display.Screen()
@@ -214,6 +206,7 @@ def forever_ping(dest, index_flag):
     logging.info("start ping...")
     global hosts
     global event
+
     while event.is_set():
         logging.info(f"ping {dest}, {index_flag}")
         delay = do_one(dest, 1, 64, index_flag)
@@ -250,8 +243,11 @@ def screen_painter():
 
 
 @click.command()
-def multi_ping():
+@click.argument("host", nargs=-1)
+def multi_ping(host):
     global hosts
+    hosts = {h: {} for h in host}
+    logger.info(f"Hosts: {hosts}")
     worker_num = len(hosts) + 10
     logger.info(f"Open ThreadPoolExecutor with max_workers={worker_num}.")
     pool = ThreadPoolExecutor(max_workers=worker_num)
