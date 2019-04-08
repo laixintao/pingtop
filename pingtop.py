@@ -209,6 +209,7 @@ tablebox = MainBox(
     border=(1, "\N{VERTICAL LINE}", "blue"),
     padding=3,
     with_footer=False,
+    ui_sort=False,
 )
 
 old_signal_keys = screen.tty_signal_keys()
