@@ -49,7 +49,7 @@ COLUMNS = [
         align="left",
         sort_key=lambda v: (v is None, v),
         attr="color",
-        padding=0,
+        padding=1,
     ),
     DataTableColumn(
         "ip",
@@ -103,7 +103,7 @@ COLUMNS = [
         align="right",
         sort_reverse=True,
         sort_icon=False,
-        padding=1,
+        padding=0,
     ),
     DataTableColumn(
         "std",
@@ -112,7 +112,7 @@ COLUMNS = [
         align="right",
         sort_reverse=True,
         sort_icon=False,
-        padding=1,
+        padding=0,
     ),
     DataTableColumn(
         "lost",
@@ -243,11 +243,11 @@ def forever_ping(dest, index_flag):
     dest_attr.setdefault("lost", 0)
     dest_attr.setdefault("lostp", "0%")
     dest_attr.setdefault("seq", 0)
-    dest_attr.setdefault("real_rtt", 0)
-    dest_attr.setdefault("min_rtt", "N/A")
-    dest_attr.setdefault("max_rtt", "N/A")
-    dest_attr.setdefault("avg_rtt", "N/A")
-    dest_attr.setdefault("std", "N/A")
+    dest_attr.setdefault("real_rtt", 999)
+    dest_attr.setdefault("min_rtt", 999)
+    dest_attr.setdefault("max_rtt", 999)
+    dest_attr.setdefault("avg_rtt", 999)
+    dest_attr.setdefault("std", 0)
     rtts = dest_attr.setdefault("rtts", [])
 
     while event.is_set():
@@ -257,7 +257,6 @@ def forever_ping(dest, index_flag):
         if delay is None:
             dest_attr["lost"] += 1
             dest_attr["lostp"] = "{0:.0%}".format(dest_attr["lost"] / dest_attr["seq"])
-            dest_attr["real_rtt"] = "Loss"
         else:
             delay_ms = int(delay * 1000)
             rtts.append(delay_ms)
@@ -283,11 +282,9 @@ def _raise_error(future):
 def redraw(loop):
     global event
     while event.is_set():
-        logger.info("draw...")
         try:
             loop.draw_screen()
         except AssertionError:
-            logger.info("eeee")
             pass
         time.sleep(0.1)
 
