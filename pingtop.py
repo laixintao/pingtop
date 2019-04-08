@@ -268,9 +268,26 @@ def forever_ping(dest, index_flag):
                     dest_attr["std"] = "%2.1f" % (statistics.stdev(rtts))
             sleep_time = WAIT_TIME - delay if delay else 0
             logger.info(f"{dest}({dest_ip})Sleep for seconds {sleep_time}")
+            position = tablebox.table.focus_position
+            logger.info(f"Position: {position}")
+
+            focus_host = ""
+            try:
+                row = tablebox.table.get_row_by_position(position)
+            except IndexError:
+                pass
+            else:
+                logger.info(f"Row: {row}")
+                logger.info(f"Row: {row.values}")
+                focus_host = row.values['host']
 
             tablebox.table.reset(reset_sort=True)
             tablebox.table.sort_by_column("real_rtt", False)
+            for r in tablebox.table.filtered_rows:
+                row = tablebox.table.get_row_by_position(r)
+                if row.values['host'] == focus_host:
+                    tablebox.table.set_focus(r)
+                    break
             mainloop.draw_screen()
 
         time.sleep(sleep_time)
