@@ -4,6 +4,7 @@ import logging
 import click
 import urwid
 import threading
+import socket
 from concurrent.futures import ThreadPoolExecutor
 from ping import do_one
 import time
@@ -28,6 +29,7 @@ WAIT_TIME = 1  # seconds
 hosts = {}
 event = threading.Event()
 
+
 screen = urwid.raw_display.Screen()
 # screen.set_terminal_properties(1<<24)
 screen.set_terminal_properties(256)
@@ -49,35 +51,44 @@ COLUMNS = [
         padding=0,
     ),
     DataTableColumn(
-        "seq",
-        label="Seq",
-        width=10,
-        align="right",
+        "ip",
+        label="IP",
+        width=3 * 4 + 3 + 2,
+        align="left",
         sort_reverse=True,
         sort_icon=False,
         padding=1,
     ),
     DataTableColumn(
-        "real_rtt",
-        label="RTT(ms)",
-        width=10,
+        "seq",
+        label="Seq",
+        width=4,
         align="right",
         sort_reverse=True,
         sort_icon=False,
-        padding=1,
+        padding=0,
+    ),
+    DataTableColumn(
+        "real_rtt",
+        label="RTT",
+        width=6,
+        align="right",
+        sort_reverse=True,
+        sort_icon=False,
+        padding=0,
     ),
     DataTableColumn(
         "min_rtt",
         label="Min",
-        width=10,
+        width=6,
         align="right",
         sort_reverse=True,
         sort_icon=False,
-        padding=1,
+        padding=0,
     ),
     DataTableColumn(
         "avg_rtt",
-        label="Avg",
+        label="Avg/Std",
         width=10,
         align="right",
         sort_reverse=True,
@@ -87,7 +98,7 @@ COLUMNS = [
     DataTableColumn(
         "max_rtt",
         label="Max",
-        width=10,
+        width=6,
         align="right",
         sort_reverse=True,
         sort_icon=False,
@@ -96,11 +107,20 @@ COLUMNS = [
     DataTableColumn(
         "lost",
         label="LOSS",
-        width=10,
+        width=5,
         align="right",
         sort_reverse=True,
         sort_icon=False,
-        padding=1,
+        padding=0,
+    ),
+    DataTableColumn(
+        "lostp",
+        label="LOSS%",
+        width=6,
+        align="right",
+        sort_reverse=True,
+        sort_icon=False,
+        padding=0,
     ),
 ]
 
@@ -206,25 +226,36 @@ def forever_ping(dest, index_flag):
     logging.info("start ping...")
     global hosts
     global event
+    dest_ip = socket.gethostbyname(dest)
+    dest_attr = hosts[dest]
+
+    dest_attr["ip"] = dest_ip
+    dest_attr.setdefault("lost", 0)
+    dest_attr.setdefault("lostp", "0%")
+    dest_attr.setdefault("seq", 0)
+    dest_attr.setdefault("real_rtt", 0)
+    dest_attr.setdefault("min_rtt", "N/A")
+    dest_attr.setdefault("max_rtt", "N/A")
+    dest_attr.setdefault("avg_rtt", "N/A")
+    rtts = dest_attr.setdefault("rtts", [])
 
     while event.is_set():
         logging.info(f"ping {dest}, {index_flag}")
         delay = do_one(dest, 1, 64, index_flag)
-        dest_attr = hosts[dest]
-        dest_attr.setdefault("seq", 1)
         dest_attr["seq"] += 1
         if delay is None:
-            hosts[dest].setdefault("lost", 0)
-            hosts[dest]["lost"] += 1
+            dest_attr["lost"] += 1
+            dest_attr["lostp"] = "{0:.0%}".format(dest_attr["lost"] / dest_attr["seq"])
+            dest_attr["real_rtt"] = "Loss"
         else:
             delay_ms = int(delay * 1000)
-            dest_attr.setdefault("rtts", []).append(delay_ms)
+            rtts.append(delay_ms)
             dest_attr["real_rtt"] = delay_ms
             dest_attr["min_rtt"] = min(dest_attr["rtts"])
             dest_attr["max_rtt"] = max(dest_attr["rtts"])
             dest_attr["avg_rtt"] = "%.1f" % (sum(dest_attr["rtts"]) / dest_attr["seq"])
         sleep_time = WAIT_TIME - delay if delay else 0
-        logger.info(f"Sleep for seconds {sleep_time}")
+        logger.info(f"{dest}({dest_ip})Sleep for seconds {sleep_time}")
         time.sleep(sleep_time)
 
         tablebox.table.reset(reset_sort=False)
@@ -236,10 +267,16 @@ def _raise_error(future):
         logging.exception(exp)
 
 
-def screen_painter():
-    while 1:
-        mainloop.draw_screen()
-        time.sleep(.01)
+def redraw(loop):
+    global event
+    while event.is_set():
+        logger.info("draw...")
+        try:
+            loop.draw_screen()
+        except AssertionError:
+            logger.info("eeee")
+            pass
+        time.sleep(0.1)
 
 
 @click.command()
@@ -255,10 +292,9 @@ def multi_ping(host):
     for index, host in zip(range(len(hosts)), hosts):
         future = pool.submit(forever_ping, host, index)
         future.add_done_callback(_raise_error)
-    future = pool.submit(screen_painter)
-    future.add_done_callback(_raise_error)
-
     try:
+        refresh = threading.Thread(target=redraw, args=(mainloop,))
+        refresh.start()
         mainloop.run()
     finally:
         screen.tty_signal_keys(*old_signal_keys)
