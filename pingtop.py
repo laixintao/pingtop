@@ -298,7 +298,7 @@ def multi_ping(host):
     global hosts
     hosts = {h: {} for h in host}
     logger.info(f"Hosts: {hosts}")
-    worker_num = len(hosts) + 10
+    worker_num = len(hosts)
     logger.info(f"Open ThreadPoolExecutor with max_workers={worker_num}.")
     pool = ThreadPoolExecutor(max_workers=worker_num)
     event.set()
