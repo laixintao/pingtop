@@ -166,7 +166,11 @@ def send_one_ping(my_socket, dest_addr, id, psize):
     dest_addr = socket.gethostbyname(dest_addr)
 
     # Remove header size from packet size
-    psize = psize - 8
+    # psize = psize - 8
+    # laixintao edit:
+    # Do not need to remove header here. From BSD ping man:
+    #     The default is 56, which translates into 64 ICMP data
+    #     bytes when combined with the 8 bytes of ICMP header data.
 
     # Header is type (8), code (8), checksum (16), id (16), sequence (16)
     my_checksum = 0
