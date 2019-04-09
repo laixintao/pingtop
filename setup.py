@@ -9,7 +9,7 @@ with open(path.join(this_directory, "readme.md"), encoding="utf-8") as f:
 
 setup(
     name="pingtop",
-    version="0.2.3",
+    version="0.2.4",
     py_modules=["ping"],
     description="Ping multiple servers and show the result in a top like terminal UI.",
     author="laixintao",
