@@ -1,6 +1,6 @@
 # pingtop
 
-A top like TUI tool for pinging mutiple servers.
+Ping multiple servers and show the result in a top like terminal UI.
 
 [![asciicast](https://asciinema.org/a/2XmzAGzbLtT9DU9tTZYl61W7y.svg)](https://asciinema.org/a/2XmzAGzbLtT9DU9tTZYl61W7y)
 
@@ -12,28 +12,25 @@ pip install pingtop
 
 Then ping mutiple server:
 ```
-pingtop baidu.com google.com twitter.com
+sudo pingtop baidu.com google.com twitter.com
 ```
+
+Why does it need `sudo` ? see [here](https://github.com/laixintao/pingtop/issues/5)
 
 This project is using [click](https://click.palletsprojects.com/en/7.x/). Check helo info with `pingtop -h`.
 
----
+```
+~ pingtop --help
+Usage: pingtop [OPTIONS] [HOST]...
 
-Column list:
-- host: host name
-- ip: real ip
-- minrtt: min round trip time
-- maxrtt: max round trip time
-- artt: average round trip time
-- lost_p: lost package percentages
-- lost: lost package count
-- seq: icmq_seq (aka, the total sent packages)
-- ttl: 
-
-
-## TODO
-
-- [ ] support count to stop
-- [ ] support all ping args
-- [ ] final summary
-- [ ] verbose to debug
+Options:
+  -s, --packetsize INTEGER        specify the number of data bytes to be sent.
+                                  The default is 56, which translates into 64
+                                  ICMP data bytes when combined with the 8
+                                  bytes of ICMP header data.  This option
+                                  cannot be used with ping sweeps.  [default:
+                                  56]
+  -l, --logto PATH
+  -v, --log-level [DEBUG|INFO|WARNING|ERROR|CRITICAL]
+  --help                          Show this message and exit.
+```
