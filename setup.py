@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name="pingtop",
-    version="0.2.1",
+    version="0.2.2",
     py_modules=["ping"],
     description="Ping multiple servers and show the result in a top like terminal UI.",
     author="laixintao",
