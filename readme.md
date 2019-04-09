@@ -2,7 +2,7 @@
 
 A top like TUI tool for pinging mutiple servers.
 
-![](doc/preview.png)
+[![asciicast](https://asciinema.org/a/2XmzAGzbLtT9DU9tTZYl61W7y.svg)](https://asciinema.org/a/2XmzAGzbLtT9DU9tTZYl61W7y)
 
 ## Usage
 
