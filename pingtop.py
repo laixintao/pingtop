@@ -193,10 +193,14 @@ class MainBox(urwid.WidgetWrap):
             "select",
             lambda source, selection: logger.info("selection: %s" % (selection)),
         )
-        label = ""
+        key_label = "[Sort Key] {}".format(
+            " ".join("{}: {}".format(key, col) for key, col in sort_keys.items())
+        )
+        quit_key_label = "[Quit key] Q"
         self.pile = urwid.Pile(
             [
-                ("pack", urwid.Text(label)),
+                ("pack", urwid.Text(key_label)),
+                ("pack", urwid.Text(quit_key_label)),
                 ("pack", urwid.Divider("\N{HORIZONTAL BAR}")),
                 ("weight", 1, self.table),
             ]
