@@ -192,6 +192,7 @@ class MainBox(urwid.WidgetWrap):
             "select",
             lambda source, selection: logger.info("selection: %s" % (selection)),
         )
+        banner = urwid.Text("Pingtop", align="center")
         key_label = "[Sort Key] {}".format(
             " ".join("{}: {}".format(key, col) for key, col in sort_keys.items())
         )
@@ -199,6 +200,7 @@ class MainBox(urwid.WidgetWrap):
         packet_size_line = f"Sending ICMP packet with {packetsize} data bytes."
         self.pile = urwid.Pile(
             [
+                ("pack", banner),
                 ("pack", urwid.Text(packet_size_line)),
                 ("pack", urwid.Text(key_label)),
                 ("pack", urwid.Text(quit_key_label)),
