@@ -291,7 +291,10 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
                 if row.values["host"] == focus_host:
                     tablebox.table.set_focus(r)
                     break
-            mainloop.draw_screen()
+            try:
+                mainloop.draw_screen()
+            except AssertionError:
+                break
 
         time.sleep(sleep_time)
 
