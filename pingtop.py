@@ -35,12 +35,11 @@ sort_keys = {
     "H": "host",
     "S": "seq",
     "R": "real_rtt",
-    "I": "main_rtt",
+    "I": "min_rtt",
     "A": "avg_rtt",
     "M": "max_rtt",
     "T": "std",
     "L": "lost",
-    "P": "lostp",
 }
 current_sort_column = "real_rtt"
 sort_reverse = False
@@ -104,7 +103,7 @@ COLUMNS = [
     DataTableColumn(
         "avg_rtt",
         label="Avg",
-        width=6,
+        width=8,
         align="right",
         sort_reverse=True,
         sort_icon=False,
@@ -122,7 +121,7 @@ COLUMNS = [
     DataTableColumn(
         "std",
         label="Std",
-        width=7,
+        width=8,
         align="right",
         sort_reverse=True,
         sort_icon=False,
@@ -275,11 +274,9 @@ def forever_ping(dest, index_flag):
                 dest_attr["real_rtt"] = delay_ms
                 dest_attr["min_rtt"] = min(dest_attr["rtts"])
                 dest_attr["max_rtt"] = max(dest_attr["rtts"])
-                dest_attr["avg_rtt"] = "%.1f" % (
-                    sum(dest_attr["rtts"]) / dest_attr["seq"]
-                )
+                dest_attr["avg_rtt"] = sum(dest_attr["rtts"]) / dest_attr["seq"]
                 if len(rtts) >= 2:
-                    dest_attr["std"] = "%2.1f" % (statistics.stdev(rtts))
+                    dest_attr["std"] = float("%2.1f" % (statistics.stdev(rtts)))
             sleep_time = max(WAIT_TIME - delay if delay else 0, 0)
             logger.info(f"{dest}({dest_ip})Sleep for seconds {sleep_time}")
             position = tablebox.table.focus_position
