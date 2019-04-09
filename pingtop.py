@@ -16,6 +16,7 @@ from urwid_utils.palette import PaletteEntry, Palette
 import os
 import random
 import string
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -344,6 +345,10 @@ def multi_ping(host, packetsize, logto, log_level):
     hosts = {h: {} for h in host}
     logger.info(f"Hosts: {hosts}")
     worker_num = len(hosts)
+    if worker_num == 0:
+        logger.error("Hosts is not defined.")
+        logger.error("Usage: pingtop host1 [host2] [host3] ...")
+        sys.exit(1)
     logger.info(f"Open ThreadPoolExecutor with max_workers={worker_num}.")
     tablebox = MainBox(
         packetsize,
