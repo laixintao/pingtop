@@ -43,6 +43,7 @@ sort_keys = {
 }
 current_sort_column = "real_rtt"
 sort_reverse = False
+UNICODE_BLOCKS = "▁▂▃▄▅▆▇█"
 
 
 screen = urwid.raw_display.Screen()
@@ -249,7 +250,7 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
     dest_attr.setdefault("max_rtt", SOCKET_TIMEOUT * 1000)
     dest_attr.setdefault("avg_rtt", SOCKET_TIMEOUT * 1000)
     dest_attr.setdefault("std", 0)
-    dest_attr.setdefault("stat", "I" * last_column_width)
+    dest_attr.setdefault("stat", "")
     rtts = dest_attr.setdefault("rtts", [])
 
     while event.is_set():
@@ -262,6 +263,7 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
                 dest_attr["lostp"] = "{0:.0%}".format(
                     dest_attr["lost"] / dest_attr["seq"]
                 )
+                block_mark = " "
             else:
                 delay_ms = int(delay * 1000)
                 rtts.append(delay_ms)
@@ -271,6 +273,9 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
                 dest_attr["avg_rtt"] = sum(dest_attr["rtts"]) / dest_attr["seq"]
                 if len(rtts) >= 2:
                     dest_attr["std"] = float("%2.1f" % (statistics.stdev(rtts)))
+
+                block_mark = UNICODE_BLOCKS[min(delay_ms // 30, 7)]
+            dest_attr['stat'] = (dest_attr['stat'] + block_mark)[-last_column_width:]
             sleep_time = max(WAIT_TIME - delay if delay else 0, 0)
             logger.info(f"{dest}({dest_ip})Sleep for seconds {sleep_time}")
             position = tablebox.table.focus_position
