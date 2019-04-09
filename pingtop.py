@@ -208,19 +208,6 @@ class MainBox(urwid.WidgetWrap):
         super().__init__(self.pile)
 
 
-tablebox = MainBox(
-    1000,
-    index="uniqueid",
-    sort_refocus=True,
-    sort_icons=True,
-    with_scrollbar=True,
-    border=(1, "\N{VERTICAL LINE}", "blue"),
-    padding=3,
-    with_footer=False,
-    ui_sort=False,
-)
-
-
 def global_input(key):
     global current_sort_column
     global sort_reverse
@@ -239,12 +226,7 @@ def global_input(key):
         return False
 
 
-mainloop = urwid.MainLoop(
-    tablebox, palette=get_palette(), screen=screen, unhandled_input=global_input
-)
-
-
-def forever_ping(dest, index_flag):
+def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
     logging.info("start ping...")
     global hosts
     global event
@@ -264,7 +246,7 @@ def forever_ping(dest, index_flag):
 
     while event.is_set():
         logging.info(f"ping {dest}, {index_flag}")
-        delay = do_one(dest, SOCKET_TIMEOUT, 64, index_flag)
+        delay = do_one(dest, SOCKET_TIMEOUT, packetsize, index_flag)
         with screen_lock:
             dest_attr["seq"] += 1
             if delay is None:
@@ -314,18 +296,38 @@ def _raise_error(future):
         logging.exception(exp)
 
 
+PACKETSIZE_HELP = "specify the number of data bytes to be sent.  The default is 56, which translates into 64 ICMP data bytes when combined with the 8 bytes of ICMP header data.  This option cannot be used with ping sweeps."
+
+
 @click.command()
 @click.argument("host", nargs=-1)
-def multi_ping(host):
+@click.option(
+    "--packetsize", "-s", type=int, default=56, show_default=True, help=PACKETSIZE_HELP
+)
+def multi_ping(host, packetsize):
     global hosts
     hosts = {h: {} for h in host}
     logger.info(f"Hosts: {hosts}")
     worker_num = len(hosts)
     logger.info(f"Open ThreadPoolExecutor with max_workers={worker_num}.")
+    tablebox = MainBox(
+        1000,
+        index="uniqueid",
+        sort_refocus=True,
+        sort_icons=True,
+        with_scrollbar=True,
+        border=(1, "\N{VERTICAL LINE}", "blue"),
+        padding=3,
+        with_footer=False,
+        ui_sort=False,
+    )
+    mainloop = urwid.MainLoop(
+        tablebox, palette=get_palette(), screen=screen, unhandled_input=global_input
+    )
     pool = ThreadPoolExecutor(max_workers=worker_num)
     event.set()
     for index, host in zip(range(len(hosts)), hosts):
-        future = pool.submit(forever_ping, host, index)
+        future = pool.submit(forever_ping, host, index, packetsize, tablebox, mainloop)
         future.add_done_callback(_raise_error)
 
     mainloop.run()
