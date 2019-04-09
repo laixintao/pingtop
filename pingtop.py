@@ -137,15 +137,18 @@ COLUMNS = [
         padding=0,
     ),
     DataTableColumn(
-        "lostp",
-        label="LOSS%",
-        width=6,
-        align="right",
-        sort_reverse=True,
-        sort_icon=False,
-        padding=0,
+        "lostp", label="LOSS%", width=6, align="right", sort_icon=False, padding=0
     ),
+    DataTableColumn("stat", label="Stat", align="left", sort_icon=False, padding=0),
 ]
+
+
+def get_last_column_width():
+    screen_width = screen.get_cols_rows()[0]
+    previous_all_column_width = sum(col.width_with_padding() for col in COLUMNS)
+    last_column_width = screen_width - previous_all_column_width - 10
+    logger.info(f"Get last_column_width = {last_column_width}.")
+    return last_column_width
 
 
 def get_palette():
@@ -233,6 +236,7 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
     logging.info("start ping...")
     global hosts
     global event
+    last_column_width = get_last_column_width()
     dest_ip = socket.gethostbyname(dest)
     dest_attr = hosts[dest]
 
@@ -245,6 +249,7 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
     dest_attr.setdefault("max_rtt", SOCKET_TIMEOUT * 1000)
     dest_attr.setdefault("avg_rtt", SOCKET_TIMEOUT * 1000)
     dest_attr.setdefault("std", 0)
+    dest_attr.setdefault("stat", "I" * last_column_width)
     rtts = dest_attr.setdefault("rtts", [])
 
     while event.is_set():
@@ -334,6 +339,7 @@ def multi_ping(host, packetsize):
         future = pool.submit(forever_ping, host, index, packetsize, tablebox, mainloop)
         future.add_done_callback(_raise_error)
 
+    logger.info(f"Screen: {screen.get_cols_rows()}")
     mainloop.run()
 
 
