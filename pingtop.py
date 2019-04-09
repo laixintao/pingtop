@@ -185,8 +185,7 @@ class PingDataTable(DataTable):
 
 
 class MainBox(urwid.WidgetWrap):
-    def __init__(self, *args, **kwargs):
-
+    def __init__(self, packetsize, *args, **kwargs):
         self.table = PingDataTable(*args, **kwargs)
         urwid.connect_signal(
             self.table,
@@ -197,8 +196,10 @@ class MainBox(urwid.WidgetWrap):
             " ".join("{}: {}".format(key, col) for key, col in sort_keys.items())
         )
         quit_key_label = "[Quit key] Q"
+        packet_size_line = f"Sending ICMP packet with {packetsize} data bytes."
         self.pile = urwid.Pile(
             [
+                ("pack", urwid.Text(packet_size_line)),
                 ("pack", urwid.Text(key_label)),
                 ("pack", urwid.Text(quit_key_label)),
                 ("pack", urwid.Divider("\N{HORIZONTAL BAR}")),
@@ -311,6 +312,7 @@ def multi_ping(host, packetsize):
     worker_num = len(hosts)
     logger.info(f"Open ThreadPoolExecutor with max_workers={worker_num}.")
     tablebox = MainBox(
+        packetsize,
         1000,
         index="uniqueid",
         sort_refocus=True,
