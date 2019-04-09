@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name="pingtop",
-    version="0.1.2",
+    version="0.2.0",
     description="Top like ping tool.",
     author="laixintao",
     author_email="laixintaoo@gmail.com",
