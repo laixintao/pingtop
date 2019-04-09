@@ -11,8 +11,8 @@ import time
 import statistics
 
 import urwid
-from urwid_datatable import *
-from urwid_utils.palette import *
+from panwid.datatable import DataTableColumn, DataTable
+from urwid_utils.palette import PaletteEntry, Palette
 import os
 import random
 import string
