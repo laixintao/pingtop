@@ -212,9 +212,7 @@ tablebox = MainBox(
 
 old_signal_keys = screen.tty_signal_keys()
 l = list(old_signal_keys)
-l[0] = "undefined"
-l[3] = "undefined"
-l[4] = "undefined"
+l[0] = l[3] = l[4] = "undefined"
 screen.tty_signal_keys(*l)
 
 
