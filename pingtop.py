@@ -34,7 +34,6 @@ screen_lock = threading.Lock()
 
 
 screen = urwid.raw_display.Screen()
-# screen.set_terminal_properties(1<<24)
 screen.set_terminal_properties(256)
 
 NORMAL_FG_MONO = "white"
@@ -213,15 +212,9 @@ tablebox = MainBox(
     ui_sort=False,
 )
 
-old_signal_keys = screen.tty_signal_keys()
-l = list(old_signal_keys)
-l[0] = l[3] = l[4] = "undefined"
-screen.tty_signal_keys(*l)
-
 
 def global_input(key):
-    if key in ("q", "Q"):
-        # TODO Ctrl-C
+    if key in ("q", "Q", "^C"):
         event.clear()
         raise urwid.ExitMainLoop()
     else:
@@ -314,10 +307,8 @@ def multi_ping(host):
     for index, host in zip(range(len(hosts)), hosts):
         future = pool.submit(forever_ping, host, index)
         future.add_done_callback(_raise_error)
-    try:
-        mainloop.run()
-    finally:
-        screen.tty_signal_keys(*old_signal_keys)
+
+    mainloop.run()
 
 
 if __name__ == "__main__":
