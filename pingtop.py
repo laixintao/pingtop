@@ -17,13 +17,6 @@ import os
 import random
 import string
 
-logging.basicConfig(
-    filename="pingtop.log",
-    filemode="a",
-    format="%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s",
-    datefmt="%H:%M:%S",
-    level=logging.DEBUG,
-)
 logger = logging.getLogger(__name__)
 
 WAIT_TIME = 1  # seconds
@@ -275,7 +268,7 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
                     dest_attr["std"] = float("%2.1f" % (statistics.stdev(rtts)))
 
                 block_mark = UNICODE_BLOCKS[min(delay_ms // 30, 7)]
-            dest_attr['stat'] = (dest_attr['stat'] + block_mark)[-last_column_width:]
+            dest_attr["stat"] = (dest_attr["stat"] + block_mark)[-last_column_width:]
             sleep_time = max(WAIT_TIME - delay if delay else 0, 0)
             logger.info(f"{dest}({dest_ip})Sleep for seconds {sleep_time}")
             position = tablebox.table.focus_position
@@ -317,8 +310,34 @@ PACKETSIZE_HELP = "specify the number of data bytes to be sent.  The default is 
 @click.option(
     "--packetsize", "-s", type=int, default=56, show_default=True, help=PACKETSIZE_HELP
 )
-def multi_ping(host, packetsize):
+@click.option("--logto", "-l", type=click.Path(), default=None)
+@click.option(
+    "--log-level",
+    "-v",
+    type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
+    default="DEBUG",
+)
+def multi_ping(host, packetsize, logto, log_level):
     global hosts
+    # setup logger
+    global logger
+    if logto:
+        _level = {
+            "DEBUG": logging.DEBUG,
+            "INFO": logging.INFO,
+            "WARNING": logging.WARNING,
+            "ERROR": logging.ERROR,
+            "CRITICAL": logging.CRITICAL,
+        }[log_level]
+        logging.basicConfig(
+            filename=logto,
+            filemode="a",
+            format="%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s",
+            datefmt="%H:%M:%S",
+            level=_level,
+        )
+        logger = logging.getLogger(__name__)
+
     hosts = {h: {} for h in host}
     logger.info(f"Hosts: {hosts}")
     worker_num = len(hosts)
