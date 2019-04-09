@@ -31,6 +31,19 @@ SOCKET_TIMEOUT = 1
 hosts = {}
 event = threading.Event()
 screen_lock = threading.Lock()
+sort_keys = {
+    "H": "host",
+    "S": "seq",
+    "R": "real_rtt",
+    "I": "main_rtt",
+    "A": "avg_rtt",
+    "M": "max_rtt",
+    "T": "std",
+    "L": "lost",
+    "P": "lostp",
+}
+current_sort_column = "real_rtt"
+sort_reverse = False
 
 
 screen = urwid.raw_display.Screen()
@@ -181,15 +194,7 @@ class MainBox(urwid.WidgetWrap):
             "select",
             lambda source, selection: logger.info("selection: %s" % (selection)),
         )
-        label = "size:%d page:%s sort:%s%s hdr:%s ftr:%s sortable:%s" % (
-            self.table.query_result_count(),
-            self.table.limit if self.table.limit else "-",
-            "-" if self.table.sort_by[1] else "+",
-            self.table.sort_by[0],
-            "y" if self.table.with_header else "n",
-            "y" if self.table.with_footer else "n",
-            "y" if self.table.ui_sort else "n",
-        )
+        label = ""
         self.pile = urwid.Pile(
             [
                 ("pack", urwid.Text(label)),
@@ -214,9 +219,19 @@ tablebox = MainBox(
 
 
 def global_input(key):
+    global current_sort_column
+    global sort_reverse
     if key in ("q", "Q", "^C"):
         event.clear()
         raise urwid.ExitMainLoop()
+    elif key.upper() in sort_keys:
+        upper_key = key.upper()
+        sort_column = sort_keys[upper_key]
+        if current_sort_column == sort_column:
+            sort_reverse = not sort_reverse
+        else:
+            sort_reverse = False
+            current_sort_column = sort_column
     else:
         return False
 
@@ -251,14 +266,18 @@ def forever_ping(dest, index_flag):
             dest_attr["seq"] += 1
             if delay is None:
                 dest_attr["lost"] += 1
-                dest_attr["lostp"] = "{0:.0%}".format(dest_attr["lost"] / dest_attr["seq"])
+                dest_attr["lostp"] = "{0:.0%}".format(
+                    dest_attr["lost"] / dest_attr["seq"]
+                )
             else:
                 delay_ms = int(delay * 1000)
                 rtts.append(delay_ms)
                 dest_attr["real_rtt"] = delay_ms
                 dest_attr["min_rtt"] = min(dest_attr["rtts"])
                 dest_attr["max_rtt"] = max(dest_attr["rtts"])
-                dest_attr["avg_rtt"] = "%.1f" % (sum(dest_attr["rtts"]) / dest_attr["seq"])
+                dest_attr["avg_rtt"] = "%.1f" % (
+                    sum(dest_attr["rtts"]) / dest_attr["seq"]
+                )
                 if len(rtts) >= 2:
                     dest_attr["std"] = "%2.1f" % (statistics.stdev(rtts))
             sleep_time = max(WAIT_TIME - delay if delay else 0, 0)
@@ -274,13 +293,13 @@ def forever_ping(dest, index_flag):
             else:
                 logger.info(f"Row: {row}")
                 logger.info(f"Row: {row.values}")
-                focus_host = row.values['host']
+                focus_host = row.values["host"]
 
             tablebox.table.reset(reset_sort=True)
-            tablebox.table.sort_by_column("real_rtt", False)
+            tablebox.table.sort_by_column(current_sort_column, sort_reverse)
             for r in tablebox.table.filtered_rows:
                 row = tablebox.table.get_row_by_position(r)
-                if row.values['host'] == focus_host:
+                if row.values["host"] == focus_host:
                     tablebox.table.set_focus(r)
                     break
             mainloop.draw_screen()
