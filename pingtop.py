@@ -27,6 +27,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 WAIT_TIME = 1  # seconds
+SOCKET_TIMEOUT = 1
 hosts = {}
 event = threading.Event()
 screen_lock = threading.Lock()
@@ -243,16 +244,16 @@ def forever_ping(dest, index_flag):
     dest_attr.setdefault("lost", 0)
     dest_attr.setdefault("lostp", "0%")
     dest_attr.setdefault("seq", 0)
-    dest_attr.setdefault("real_rtt", 999)
-    dest_attr.setdefault("min_rtt", 999)
-    dest_attr.setdefault("max_rtt", 999)
-    dest_attr.setdefault("avg_rtt", 999)
+    dest_attr.setdefault("real_rtt", SOCKET_TIMEOUT * 1000)
+    dest_attr.setdefault("min_rtt", SOCKET_TIMEOUT * 1000)
+    dest_attr.setdefault("max_rtt", SOCKET_TIMEOUT * 1000)
+    dest_attr.setdefault("avg_rtt", SOCKET_TIMEOUT * 1000)
     dest_attr.setdefault("std", 0)
     rtts = dest_attr.setdefault("rtts", [])
 
     while event.is_set():
         logging.info(f"ping {dest}, {index_flag}")
-        delay = do_one(dest, 1, 64, index_flag)
+        delay = do_one(dest, SOCKET_TIMEOUT, 64, index_flag)
         with screen_lock:
             dest_attr["seq"] += 1
             if delay is None:
@@ -267,7 +268,7 @@ def forever_ping(dest, index_flag):
                 dest_attr["avg_rtt"] = "%.1f" % (sum(dest_attr["rtts"]) / dest_attr["seq"])
                 if len(rtts) >= 2:
                     dest_attr["std"] = "%2.1f" % (statistics.stdev(rtts))
-            sleep_time = WAIT_TIME - delay if delay else 0
+            sleep_time = max(WAIT_TIME - delay if delay else 0, 0)
             logger.info(f"{dest}({dest_ip})Sleep for seconds {sleep_time}")
             position = tablebox.table.focus_position
             logger.info(f"Position: {position}")
