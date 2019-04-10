@@ -199,15 +199,14 @@ def do_one(dest_addr, timeout, psize, flag=0):
     """
     icmp = socket.getprotobyname("icmp")
     try:
-        my_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, icmp)
+        if os.getuid() != 0:
+            my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, icmp)
+        else:
+            my_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, icmp)
     except socket.error as e:
         if e.errno == 1:
             # Operation not permitted
             msg = str(e)
-            msg = msg + (
-                " - Note that ICMP messages can only be sent from processes"
-                " running as root."
-            )
             raise socket.error(msg)
         raise  # raise the original error
 
