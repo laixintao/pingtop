@@ -12,10 +12,8 @@ pip install pingtop
 
 Then ping mutiple server:
 ```
-sudo pingtop baidu.com google.com twitter.com
+pingtop baidu.com google.com twitter.com
 ```
-
-Why does it need `sudo` ? see [here](https://github.com/laixintao/pingtop/issues/5)
 
 This project is using [click](https://click.palletsprojects.com/en/7.x/). Check helo info with `pingtop -h`.
 
