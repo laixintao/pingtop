@@ -2,7 +2,7 @@
 
 Ping multiple servers and show the result in a top like terminal UI.
 
-[![asciicast](https://asciinema.org/a/2XmzAGzbLtT9DU9tTZYl61W7y.svg)](https://asciinema.org/a/2XmzAGzbLtT9DU9tTZYl61W7y)
+[![asciicast](https://asciinema.org/a/onbBCmHzhltau7iqButUGx6yu.svg)](https://asciinema.org/a/onbBCmHzhltau7iqButUGx6yu)
 
 ## Usage
 
