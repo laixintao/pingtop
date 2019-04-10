@@ -211,6 +211,11 @@ class MainBox(urwid.WidgetWrap):
 def global_input(key):
     global current_sort_column
     global sort_reverse
+
+    # keyboard input only
+    if not isinstance(key, str):
+        return
+
     if key in ("q", "Q", "^C"):
         event.clear()
         raise urwid.ExitMainLoop()
