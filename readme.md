@@ -4,18 +4,20 @@ Ping multiple servers and show the result in a top like terminal UI.
 
 [![asciicast](https://asciinema.org/a/onbBCmHzhltau7iqButUGx6yu.svg)](https://asciinema.org/a/onbBCmHzhltau7iqButUGx6yu)
 
-## Usage
+## Install
 
 ```
 pip install pingtop
 ```
+
+## Usage
 
 Then ping mutiple server:
 ```
 pingtop baidu.com google.com twitter.com
 ```
 
-This project is using [click](https://click.palletsprojects.com/en/7.x/). Check helo info with `pingtop -h`.
+This project is using [click](https://click.palletsprojects.com/en/7.x/). Check help info with `pingtop -h`.
 
 ```
 ~ pingtop --help
@@ -32,3 +34,8 @@ Options:
   -v, --log-level [DEBUG|INFO|WARNING|ERROR|CRITICAL]
   --help                          Show this message and exit.
 ```
+
+## Credits
+
+- For the credits of ping.py's implementation please refer [ping.py](./ping.py).
+- The UI was built on [panwid](https://github.com/tonycpsu/panwid) thanks to @tonycpsu.
