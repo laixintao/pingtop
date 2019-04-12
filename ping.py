@@ -90,7 +90,8 @@
     -----------
     Forked by laixintao:
     - Migrate to Python3
-
+    - Make it thread safe by setting a flag in packet
+    - do not need sudo (by @gzxultra (Zhixiang) )
 """
 
 __version__ = "0.2"
