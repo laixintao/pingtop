@@ -348,10 +348,15 @@ def multi_ping(host, packetsize, logto, log_level):
 
     hosts = {h: {} for h in host}
     logger.info(f"Hosts: {hosts}")
-    worker_num = len(hosts)
-    logger.info(f"Open ThreadPoolExecutor with max_workers={worker_num}.")
+    hosts_num = len(hosts)
+
+    if (hosts_num) == 0:
+        raise click.BadParameter("Hosts were not specified.")
+
+    # update the HOST column width to fit max length host
     max_host_length = max([len(host) for host in hosts] + [9]) + 2
     COLUMNS[0].width = max_host_length if max_host_length < 40 else 40
+    # start the UI loop
     tablebox = MainBox(
         packetsize,
         1000,
@@ -367,13 +372,16 @@ def multi_ping(host, packetsize, logto, log_level):
     mainloop = urwid.MainLoop(
         tablebox, palette=get_palette(), screen=screen, unhandled_input=global_input
     )
-    pool = ThreadPoolExecutor(max_workers=worker_num)
+
+    # open threadpool to ping
+    logger.info(f"Open ThreadPoolExecutor with max_workers={hosts_num}.")
+    pool = ThreadPoolExecutor(max_workers=hosts_num)
     event.set()
     for index, host in zip(range(len(hosts)), hosts):
         future = pool.submit(forever_ping, host, index, packetsize, tablebox, mainloop)
         future.add_done_callback(_raise_error)
 
-    logger.info(f"Screen: {screen.get_cols_rows()}")
+    # Go!
     mainloop.run()
 
 
