@@ -350,6 +350,8 @@ def multi_ping(host, packetsize, logto, log_level):
     logger.info(f"Hosts: {hosts}")
     worker_num = len(hosts)
     logger.info(f"Open ThreadPoolExecutor with max_workers={worker_num}.")
+    max_host_length = max([len(host) for host in hosts] + [9]) + 2
+    COLUMNS[0].width = max_host_length if max_host_length < 40 else 40
     tablebox = MainBox(
         packetsize,
         1000,
