@@ -1,4 +1,4 @@
-# pingtop
+# pingtop [![CircleCI](https://circleci.com/gh/laixintao/pingtop.svg?style=svg)](https://circleci.com/gh/laixintao/pingtop)
 
 Ping multiple servers and show the result in a top like terminal UI.
 
