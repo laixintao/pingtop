@@ -1,0 +1,29 @@
+version: 2
+jobs:
+  python:
+    docker:
+      - image: circleci/python:3.7
+
+    steps:
+      - checkout
+      - run:
+          name: Install Tox
+          command: |
+            pip install --user tox
+            echo 'export PATH="$PATH":"$HOME"/.local/bin' >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: Run Tests
+          environment:
+                TEST_RESULTS_DIR: /tmp/tox/
+          command: |
+            mkdir /tmp/tox
+            tox
+      - store_test_results:
+          path: /tmp/tox
+
+workflows:
+  version: 2
+  UnitTests:
+    jobs:
+      - python
