@@ -150,8 +150,14 @@ def receive_one_ping(my_socket, id, timeout):
         received_packet, addr = my_socket.recvfrom(1024)
         icmpHeader = received_packet[20:28]
         type, code, checksum, packet_id, sequence = struct.unpack("bbHHh", icmpHeader)
-        if packet_id == id:
-            bytes = struct.calcsize("d")
+        bytes = struct.calcsize("d")
+
+        if my_socket.type == socket.SocketKind.SOCK_DGRAM:
+            # id filled by kernel, but packet is guaranteed the one we requested.
+            # Also, no IP header, so offset is 8.
+            time_sent = struct.unpack("d", received_packet[8 : 8 + bytes])[0]
+            return time_received - time_sent
+        elif packet_id == id:
             time_sent = struct.unpack("d", received_packet[28 : 28 + bytes])[0]
             return time_received - time_sent
 
