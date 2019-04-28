@@ -35,7 +35,30 @@ Options:
   --help                          Show this message and exit.
 ```
 
+## Why I get `Permission denied` ?
+
+We use ICMP socket to send ping packet without `sudo` (See [this post](https://blog.lilydjwg.me/2013/10/29/non-privileged-icmp-ping.41390.html) by lilydjwg(in Chinese)), however, who(which group) can use this feature is controled by a kernel parameter: `net.ipv4.ping_group_range`.
+
+```
+cat /proc/sys/net/ipv4/ping_group_range
+
+1    0
+```
+
+The default value is `1 0`, this means the whose group number from 1 to 0 can use this feature(which means nobody can use this), so you get a Permission denied .
+
+To fix this, change this variable to a proper range include your group id, like this:
+
+```
+[vagrant@centos7 pingtop]$ id
+uid=1000(vagrant) gid=1000(vagrant) groups=1000(vagrant) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+
+[vagrant@centos7 pingtop]$ sudo sysctl -w net.ipv4.ping_group_range='0 1001'
+net.ipv4.ping_group_range = 0 1001
+```
+
 ## Credits
 
 - For the credits of ping.py's implementation please refer [ping.py](./ping.py).
 - The UI was built on [panwid](https://github.com/tonycpsu/panwid) thanks to @tonycpsu.
+- @[gzxultra](https://github.com/gzxultra) helped to solve the permission issues.
