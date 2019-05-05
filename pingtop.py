@@ -156,6 +156,34 @@ def get_palette():
     return palette
 
 
+def rerender_table(loop, table):
+    """
+    Rerender table box from its data, and make loop redraw screen.
+    Not thread safe.
+    """
+    # save focused host
+    position = table.focus_position
+    focus_host = ""
+    try:
+        row = table.get_row_by_position(position)
+    except IndexError:
+        pass
+    else:
+        focus_host = row.values["host"]
+
+    # restore sort column
+    table.reset(reset_sort=True)
+    table.sort_by_column(current_sort_column, sort_reverse)
+
+    # restore focused host
+    for r in table.filtered_rows:
+        row = table.get_row_by_position(r)
+        if row.values["host"] == focus_host:
+            table.set_focus(r)
+            break
+    loop.draw_screen()
+
+
 class PingDataTable(DataTable):
 
     columns = COLUMNS[:]
@@ -232,7 +260,6 @@ def global_input(key):
 
 
 def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
-    logging.info("start ping...")
     global hosts
     global event
     last_column_width = get_last_column_width()
@@ -262,6 +289,7 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
                     dest_attr["lost"] / dest_attr["seq"]
                 )
                 block_mark = " "
+                sleep_before_next_ping = WAIT_TIME
             else:
                 delay_ms = int(delay * 1000)
                 rtts.append(delay_ms)
@@ -273,35 +301,15 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
                     dest_attr["std"] = float("%2.1f" % (statistics.stdev(rtts)))
 
                 block_mark = UNICODE_BLOCKS[min(delay_ms // 30, 7)]
+                sleep_before_next_ping = WAIT_TIME - delay
             dest_attr["stat"] = (dest_attr["stat"] + block_mark)[-last_column_width:]
-            sleep_time = max(WAIT_TIME - delay if delay else 0, 0)
-            logger.info(f"{dest}({dest_ip})Sleep for seconds {sleep_time}")
-            position = tablebox.table.focus_position
-            logger.info(f"Position: {position}")
 
-            focus_host = ""
-            try:
-                row = tablebox.table.get_row_by_position(position)
-            except IndexError:
-                pass
-            else:
-                logger.info(f"Row: {row}")
-                logger.info(f"Row: {row.values}")
-                focus_host = row.values["host"]
-
-            tablebox.table.reset(reset_sort=True)
-            tablebox.table.sort_by_column(current_sort_column, sort_reverse)
-            for r in tablebox.table.filtered_rows:
-                row = tablebox.table.get_row_by_position(r)
-                if row.values["host"] == focus_host:
-                    tablebox.table.set_focus(r)
-                    break
-            try:
-                mainloop.draw_screen()
-            except AssertionError:
-                break
-
-        time.sleep(sleep_time)
+        try:
+            rerender_table(mainloop, tablebox.table)
+        except AssertionError:
+            break
+        logger.info(f"{dest}({dest_ip})Sleep for seconds {sleep_before_next_ping}")
+        time.sleep(max(0, sleep_before_next_ping))
 
 
 def _raise_error(future):
