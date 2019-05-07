@@ -321,6 +321,26 @@ def _raise_error(future):
 PACKETSIZE_HELP = "specify the number of data bytes to be sent.  The default is 56, which translates into 64 ICMP data bytes when combined with the 8 bytes of ICMP header data.  This option cannot be used with ping sweeps."
 
 
+def config_logger(level, logfile):
+    global logger
+    _level = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL,
+    }[level]
+    logging.basicConfig(
+        filename=logfile,
+        filemode="a",
+        format="%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s",
+        datefmt="%H:%M:%S",
+        level=_level,
+    )
+    logger = logging.getLogger(__name__)
+    return logger
+
+
 @click.command()
 @click.argument("host", nargs=-1)
 @click.option(
@@ -335,25 +355,8 @@ PACKETSIZE_HELP = "specify the number of data bytes to be sent.  The default is 
 )
 def multi_ping(host, packetsize, logto, log_level):
     global hosts
-    # setup logger
-    global logger
     if logto:
-        _level = {
-            "DEBUG": logging.DEBUG,
-            "INFO": logging.INFO,
-            "WARNING": logging.WARNING,
-            "ERROR": logging.ERROR,
-            "CRITICAL": logging.CRITICAL,
-        }[log_level]
-        logging.basicConfig(
-            filename=logto,
-            filemode="a",
-            format="%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s",
-            datefmt="%H:%M:%S",
-            level=_level,
-        )
-        logger = logging.getLogger(__name__)
-
+        config_logger(log_level, logto)
     hosts = {h: {} for h in host}
     logger.info(f"Hosts: {hosts}")
     hosts_num = len(hosts)
