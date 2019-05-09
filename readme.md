@@ -35,7 +35,7 @@ Options:
   --help                          Show this message and exit.
 ```
 
-## Why I get `Permission denied` ?
+## Why do I get `Permission denied` ?
 
 We use ICMP socket to send ping packet without `sudo` (See [this post](https://blog.lilydjwg.me/2013/10/29/non-privileged-icmp-ping.41390.html) by lilydjwg(in Chinese)), however, who(which group) can use this feature is controled by a kernel parameter: `net.ipv4.ping_group_range`.
 
