@@ -27,5 +27,5 @@ setup(
     ],
     keywords=["IP", "ping", "icmp"],
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
 )
