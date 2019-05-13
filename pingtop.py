@@ -281,6 +281,7 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
     while event.is_set():
         logging.info(f"ping {dest}, {index_flag}")
         delay = do_one(dest, SOCKET_TIMEOUT, packetsize, index_flag)
+        logging.info(f"[Done]ping {dest}, {index_flag} rtt={delay}")
         with screen_lock:
             dest_attr["seq"] += 1
             if delay is None:
