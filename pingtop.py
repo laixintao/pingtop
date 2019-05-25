@@ -263,7 +263,15 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
     global hosts
     global event
     last_column_width = get_last_column_width()
-    dest_ip = socket.gethostbyname(dest)
+    try:
+        dest_ip = socket.gethostbyname(dest)
+    except socket.gaierror as e:
+        hosts[dest]["error"] = e
+        hosts[dest]["ip"] = "Unknown"
+        with event.is_set() and screen_lock:
+            rerender_table(mainloop, tablebox.table)
+        return
+
     dest_attr = hosts[dest]
 
     dest_attr["ip"] = dest_ip
@@ -342,6 +350,41 @@ def config_logger(level, logfile):
     return logger
 
 
+def ping_statistics(data):
+    """
+    Render result statistics
+    :return: str result string
+    """
+    TEMPLATE = """--- {hostname} ping statistics ---
+{packet} packets transmitted, {packet_received} packets received, {packet_lost}% packet loss
+round-trip min/avg/max/stddev = {min:3.2f}/{avg:3.2f}/{max:3.2f}/{stddev:3.2f} ms"""
+    ERROR_TEMPLATE = """--- {hostname} ping statistics ---
+ping: cannot resolve {hostname}: Unknown host"""
+    results = []
+    for hostname, value in data.items():
+        if value.get("error"):
+            # I could use PEP572 here
+            results.append(ERROR_TEMPLATE.format(hostname=hostname))
+            continue
+        rtts = value["rtts"]
+        stdev = 0
+        if len(rtts) > 2:
+            stdev = statistics.stdev(value["rtts"])
+        results.append(
+            TEMPLATE.format(
+                hostname=hostname,
+                packet=value["seq"],
+                packet_received=int(value["seq"]) - int(value["lost"]),
+                packet_lost=value["lost"],
+                min=min(value["rtts"]),
+                avg=sum(value["rtts"]) / value["seq"],
+                max=max(value["rtts"]),
+                stddev=stdev,
+            )
+        )
+    return "\n".join(results)
+
+
 @click.command()
 @click.argument("host", nargs=-1)
 @click.option(
@@ -395,6 +438,8 @@ def multi_ping(host, packetsize, logto, log_level):
 
     # Go!
     mainloop.run()
+
+    click.echo(ping_statistics(hosts))
 
 
 if __name__ == "__main__":
