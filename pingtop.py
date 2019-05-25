@@ -397,7 +397,8 @@ ping: cannot resolve {hostname}: Unknown host"""
     type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
     default="DEBUG",
 )
-def multi_ping(host, packetsize, logto, log_level):
+@click.option('--summary/--no-summary', default=True, help="Weather to print BSD compatible summary.")
+def multi_ping(host, packetsize, logto, log_level, summary):
     global hosts
     if logto:
         config_logger(log_level, logto)
@@ -439,7 +440,8 @@ def multi_ping(host, packetsize, logto, log_level):
     # Go!
     mainloop.run()
 
-    click.echo(ping_statistics(hosts))
+    if summary:
+        click.echo(ping_statistics(hosts))
 
 
 if __name__ == "__main__":
