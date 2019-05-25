@@ -356,8 +356,8 @@ def ping_statistics(data):
     :return: str result string
     """
     TEMPLATE = """--- {hostname} ping statistics ---
-{packet} packets transmitted, {packet_received} packets received, {packet_lost}% packet loss
-round-trip min/avg/max/stddev = {min:3.2f}/{avg:3.2f}/{max:3.2f}/{stddev:3.2f} ms"""
+{packet} packets transmitted, {packet_received} packets received, {packet_lost:.1f}% packet loss"""
+    RTT_TEMPLATE = """\nround-trip min/avg/max/stddev = {min:3.2f}/{avg:3.2f}/{max:3.2f}/{stddev:3.2f} ms"""
     ERROR_TEMPLATE = """--- {hostname} ping statistics ---
 ping: cannot resolve {hostname}: Unknown host"""
     results = []
@@ -367,21 +367,24 @@ ping: cannot resolve {hostname}: Unknown host"""
             results.append(ERROR_TEMPLATE.format(hostname=hostname))
             continue
         rtts = value["rtts"]
-        stdev = 0
-        if len(rtts) > 2:
-            stdev = statistics.stdev(value["rtts"])
-        results.append(
-            TEMPLATE.format(
-                hostname=hostname,
-                packet=value["seq"],
-                packet_received=int(value["seq"]) - int(value["lost"]),
-                packet_lost=value["lost"],
+        packets_info = TEMPLATE.format(
+            hostname=hostname,
+            packet=value["seq"],
+            packet_received=int(value["seq"]) - int(value["lost"]),
+            packet_lost=value["lost"]/value['seq'] * 100,
+        )
+        rtt_info = ""
+        if rtts:
+            stdev = 0
+            if len(rtts) > 2:
+                stdev = statistics.stdev(value["rtts"])
+            rtt_info = RTT_TEMPLATE.format(
                 min=min(value["rtts"]),
                 avg=sum(value["rtts"]) / value["seq"],
                 max=max(value["rtts"]),
                 stddev=stdev,
             )
-        )
+        results.append(packets_info + rtt_info)
     return "\n".join(results)
 
 
