@@ -241,6 +241,7 @@ def global_input(key):
     global sort_reverse
 
     # keyboard input only
+    logger.info(f"[KEY]: {key}")
     if not isinstance(key, str):
         return
 
@@ -367,11 +368,18 @@ ping: cannot resolve {hostname}: Unknown host"""
             results.append(ERROR_TEMPLATE.format(hostname=hostname))
             continue
         rtts = value["rtts"]
+        if value["seq"] == 0:
+            packet, packet_received, packet_lost = 0, 0, 0
+        else:
+            packet = value["seq"]
+            packet_received = int(value["seq"]) - int(value["lost"])
+            packet_lost = value["lost"] / value["seq"] * 100
+
         packets_info = TEMPLATE.format(
             hostname=hostname,
-            packet=value["seq"],
-            packet_received=int(value["seq"]) - int(value["lost"]),
-            packet_lost=value["lost"]/value['seq'] * 100,
+            packet=packet,
+            packet_received=packet_received,
+            packet_lost=packet_lost,
         )
         rtt_info = ""
         if rtts:
@@ -400,7 +408,11 @@ ping: cannot resolve {hostname}: Unknown host"""
     type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
     default="DEBUG",
 )
-@click.option('--summary/--no-summary', default=True, help="Weather to print BSD compatible summary.")
+@click.option(
+    "--summary/--no-summary",
+    default=True,
+    help="Weather to print BSD compatible summary.",
+)
 def multi_ping(host, packetsize, logto, log_level, summary):
     global hosts
     if logto:
