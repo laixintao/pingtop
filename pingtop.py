@@ -263,7 +263,15 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
     global hosts
     global event
     last_column_width = get_last_column_width()
-    dest_ip = socket.gethostbyname(dest)
+    try:
+        dest_ip = socket.gethostbyname(dest)
+    except socket.gaierror as e:
+        hosts[dest]["error"] = e
+        hosts[dest]["ip"] = "Unknown"
+        with event.is_set() and screen_lock:
+            rerender_table(mainloop, tablebox.table)
+        return
+
     dest_attr = hosts[dest]
 
     dest_attr["ip"] = dest_ip
@@ -281,6 +289,7 @@ def forever_ping(dest, index_flag, packetsize, tablebox, mainloop):
     while event.is_set():
         logging.info(f"ping {dest}, {index_flag}")
         delay = do_one(dest, SOCKET_TIMEOUT, packetsize, index_flag)
+        logging.info(f"[Done]ping {dest}, {index_flag} rtt={delay}")
         with screen_lock:
             dest_attr["seq"] += 1
             if delay is None:
@@ -341,6 +350,41 @@ def config_logger(level, logfile):
     return logger
 
 
+def ping_statistics(data):
+    """
+    Render result statistics
+    :return: str result string
+    """
+    TEMPLATE = """--- {hostname} ping statistics ---
+{packet} packets transmitted, {packet_received} packets received, {packet_lost}% packet loss
+round-trip min/avg/max/stddev = {min:3.2f}/{avg:3.2f}/{max:3.2f}/{stddev:3.2f} ms"""
+    ERROR_TEMPLATE = """--- {hostname} ping statistics ---
+ping: cannot resolve {hostname}: Unknown host"""
+    results = []
+    for hostname, value in data.items():
+        if value.get("error"):
+            # I could use PEP572 here
+            results.append(ERROR_TEMPLATE.format(hostname=hostname))
+            continue
+        rtts = value["rtts"]
+        stdev = 0
+        if len(rtts) > 2:
+            stdev = statistics.stdev(value["rtts"])
+        results.append(
+            TEMPLATE.format(
+                hostname=hostname,
+                packet=value["seq"],
+                packet_received=int(value["seq"]) - int(value["lost"]),
+                packet_lost=value["lost"],
+                min=min(value["rtts"]),
+                avg=sum(value["rtts"]) / value["seq"],
+                max=max(value["rtts"]),
+                stddev=stdev,
+            )
+        )
+    return "\n".join(results)
+
+
 @click.command()
 @click.argument("host", nargs=-1)
 @click.option(
@@ -353,7 +397,8 @@ def config_logger(level, logfile):
     type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
     default="DEBUG",
 )
-def multi_ping(host, packetsize, logto, log_level):
+@click.option('--summary/--no-summary', default=True, help="Weather to print BSD compatible summary.")
+def multi_ping(host, packetsize, logto, log_level, summary):
     global hosts
     if logto:
         config_logger(log_level, logto)
@@ -394,6 +439,9 @@ def multi_ping(host, packetsize, logto, log_level):
 
     # Go!
     mainloop.run()
+
+    if summary:
+        click.echo(ping_statistics(hosts))
 
 
 if __name__ == "__main__":
