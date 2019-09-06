@@ -6,16 +6,12 @@ import urwid
 import threading
 import socket
 from concurrent.futures import ThreadPoolExecutor
-from ping import do_one
+from .ping import do_one
 import time
 import statistics
 
-import urwid
 from panwid.datatable import DataTableColumn, DataTable
 from urwid_utils.palette import PaletteEntry, Palette
-import os
-import random
-import string
 
 logger = logging.getLogger(__name__)
 
