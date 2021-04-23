@@ -76,7 +76,7 @@ Credits
 -------
 
 -  For the credits of ping.py’s implementation please refer
-   `ping.py <./ping.py>`__.
+   `ping.py <./pingtop/ping.py>`__.
 -  The UI was built on `panwid <https://github.com/tonycpsu/panwid>`__
    thanks to @tonycpsu.
 -  @\ `gzxultra <https://github.com/gzxultra>`__ helped to solve the
