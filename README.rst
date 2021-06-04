@@ -1,7 +1,6 @@
 pingtop 
 =======
 
-|CircleCI|
 
 Ping multiple servers and show the result in a top like terminal UI.
 
