@@ -14,6 +14,11 @@ Install
 
    pip install pingtop
 
+
+** pingtop support Python3.8 Python3.8. **
+
+There is a dependency (`blist <http://stutzbachenterprises.com/blist/>`) not supporting Python3.9, so please pingtop can't support 3.9.
+
 Usage
 -----
 
