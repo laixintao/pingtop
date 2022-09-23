@@ -9,7 +9,7 @@ with open(path.join(this_directory, "README.rst")) as f:
 
 setup(
     name="pingtop",
-    version="0.4.1",
+    version="0.4.2",
     packages=find_packages(),
     description="Ping multiple servers and show the result in a top like terminal UI.",
     author="laixintao",
