@@ -71,7 +71,7 @@
      * Chris Hallman -- http://cdhallman.blogspot.com
 
     Changes in this release:
-     - Re-use time.time() instead of time.clock(). The 2007 implementation
+     - Reuse time.time() instead of time.clock(). The 2007 implementation
        worked only under Microsoft Windows. Failed on GNU/Linux.
        time.clock() behaves differently under the two OSes[1].
 
@@ -103,7 +103,7 @@ import struct
 import sys
 import time
 
-# From /usr/include/linux/icmp.h; your milage may vary.
+# From /usr/include/linux/icmp.h; your mileage may vary.
 ICMP_ECHO_REQUEST = 8  # Seems to be the same on Solaris.
 
 
@@ -176,7 +176,7 @@ def send_one_ping(my_socket, dest_addr, id, psize):
     # Header is type (8), code (8), checksum (16), id (16), sequence (16)
     my_checksum = 0
 
-    # Make a dummy heder with a 0 checksum.
+    # Make a dummy header with a 0 checksum.
     header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, my_checksum, id, 1)
     bytes = struct.calcsize("d")
     data = (psize - bytes) * b"Q"

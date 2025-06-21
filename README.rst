@@ -21,7 +21,7 @@ There is a dependency (`blist <http://stutzbachenterprises.com/blist/>`) not sup
 Usage
 -----
 
-Then ping mutiple server:
+Then ping multiple server:
 
 ::
 
@@ -53,7 +53,7 @@ Why do I get ``Permission denied`` ?
 We use ICMP socket to send ping packet without ``sudo`` (See `this
 post <https://blog.lilydjwg.me/2013/10/29/non-privileged-icmp-ping.41390.html>`__
 by lilydjwg(in Chinese)), however, who(which group) can use this feature
-is controled by a kernel parameter: ``net.ipv4.ping_group_range``.
+is controlled by a kernel parameter: ``net.ipv4.ping_group_range``.
 
 ::
 
