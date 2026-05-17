@@ -7,7 +7,7 @@ from statistics import stdev
 from typing import Protocol
 
 HostId = str
-MAX_HISTORY = 60
+MAX_HISTORY = 64
 TREND_BLOCKS = "▁▂▃▄▅▆▇█"
 TIMEOUT_MARKER = "╳"
 
