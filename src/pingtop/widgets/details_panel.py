@@ -38,7 +38,7 @@ class DetailsPanel(Static):
         return max(16, min(pingtop.models.MAX_HISTORY, available))
 
     def _left_column_lines(self, row: dict[str, object]) -> list[str]:
-        return [
+        lines = [
             f"Host: {row['target']}",
             f"IP: {row['resolved_ip'] or '-'}",
             f"State: {row['state']}",
@@ -49,8 +49,13 @@ class DetailsPanel(Static):
             f"StdDev: {self._fmt(row['stddev_ms'])}",
             f"Sent: {row['seq']}",
             f"Loss: {row['lost']} ({float(cast(float, row['loss_percent'])):.1f}%)",
-            f"Error: {self._truncate(str(row['last_error'] or '-'))}",
         ]
+
+        last_err = row.get('last_error')
+        if last_err not in (None, '', b''):
+            lines.append(f"Error: {self._truncate(str(last_err))}")
+
+        return lines
 
     def _left_column_width(self, lines: list[str]) -> int:
         if not lines:
