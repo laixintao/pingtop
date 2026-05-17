@@ -125,9 +125,11 @@ def render_detailed_trend_graph(
                 line.append("█", style=TREND_STYLES[bucket])
             else:
                 line.append("·", style=DETAIL_GRAPH_EMPTY_STYLE)
+        for _ in range(width - len(cells)):
+             line.append("·", style=DETAIL_GRAPH_EMPTY_STYLE)
         lines.append(line)
 
-    lines.append(_render_graph_axis(len(cells), label_width))
+    lines.append(_render_graph_axis(width, label_width))
     return lines
 
 
