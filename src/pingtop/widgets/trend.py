@@ -105,11 +105,8 @@ def render_detailed_trend_graph(
 
     low = min(samples)
     high = max(samples)
-    avg = sum(samples) / len(samples)
     span = max(high - low, 1.0)
     label_width = max(len(f"{low:.1f}"), len(f"{high:.1f}"))
-    header.append(f"  {low:.1f}..{high:.1f} ms", style=DETAIL_GRAPH_AXIS_STYLE)
-    header.append(f"  avg {avg:.1f}", style=DETAIL_GRAPH_AXIS_STYLE)
 
     lines = [header]
     for level in range(height, 0, -1):
@@ -131,7 +128,6 @@ def render_detailed_trend_graph(
         lines.append(line)
 
     lines.append(_render_graph_axis(len(cells), label_width))
-    lines.append(Text(" " * (label_width + 3) + "oldest -> newest", style=DETAIL_GRAPH_AXIS_STYLE))
     return lines
 
 
