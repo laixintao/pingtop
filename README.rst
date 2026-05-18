@@ -206,6 +206,8 @@ Then widen the allowed range so your user or group can open ICMP sockets:
 Development
 -----------
 
+You may need to set `poetry config virtualenvs.in-project true` for the included vscode launch.json to work.
+
 ::
 
    poetry install
