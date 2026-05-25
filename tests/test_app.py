@@ -15,7 +15,7 @@ from pingtop.widgets.host_table import HostTable
 
 class FakeEngine:
     def __init__(self) -> None:
-        self._counts = defaultdict(int)
+        self._counts: defaultdict[str, int] = defaultdict(int)
 
     async def ping_once(
         self, target: str, timeout: float, packet_size: int, flag: int
@@ -46,7 +46,7 @@ async def test_app_boots_and_updates_rows() -> None:
         await pilot.pause(0.25)
         table = app.query_one(HostTable)
         row = session.host_snapshot(next(iter(session.hosts)))
-        assert row["seq"] >= 1
+        assert row["seq"] >= 1  # type: ignore[operator]
         assert row["trend"]
         trend_index = HostTable.COLUMN_PROFILES["wide"].index("trend")
         trend_cell = table.get_row(str(row["id"]))[trend_index]
@@ -107,6 +107,7 @@ async def test_app_sort_and_help_screen() -> None:
         help_screen = app.screen_stack[-1]
         legend = help_screen.query_one("#trend-legend", Static)
         legend_render = legend.render()
+        assert isinstance(legend_render, Text)
         assert "Trend Legend" in legend_render.plain
         assert "low RTT" in legend_render.plain
         assert "high RTT" in legend_render.plain
@@ -165,6 +166,7 @@ async def test_details_panel_defaults_open_on_large_window_and_closed_on_small_w
         await pilot.pause(0.15)
         assert not details.has_class("hidden-panel")
         details_render = details.render()
+        assert isinstance(details_render, Text)
         assert "RTT Graph" in details_render.plain
         assert "oldest -> newest" in details_render.plain
         assert "Host:" in details_render.plain
@@ -228,11 +230,11 @@ def test_restore_table_viewport_coalesces_after_refresh_callbacks() -> None:
     app._restore_table_viewport(3.0, 4.0)
 
     assert len(scheduled) == 1
-    assert len(app.table.calls) == 2
+    assert len(app.table.calls) == 2  # type: ignore[attr-defined]
 
     app._flush_table_viewport_restore()
 
-    assert app.table.calls[-1] == {
+    assert app.table.calls[-1] == {  # type: ignore[attr-defined]
         "x": 3.0,
         "y": 4.0,
         "immediate": True,
