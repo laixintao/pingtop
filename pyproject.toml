@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "pingtop"
-version = "0.5.0"
+version = "0.5.1"
 description = "Modern multi-host ping monitor with a Textual TUI."
 readme = "README.rst"
 requires-python = ">=3.10,<4.0"
