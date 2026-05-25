@@ -189,9 +189,12 @@ If you export a snapshot, the file includes session config, aggregate stats, and
 Permissions
 -----------
 
-``pingtop`` uses ICMP sockets directly.
+``pingtop`` uses ICMP sockets directly and does **not** require ``sudo`` or root privileges on modern systems.
 
-On Linux, non-root access depends on ``net.ipv4.ping_group_range``. If you hit a permission error, inspect the current value:
+- **macOS** — unprivileged ICMP is supported out of the box.
+- **Linux** — most distributions ship with a permissive ``net.ipv4.ping_group_range`` by default.
+
+If you do hit a permission error on Linux, check the current value:
 
 ::
 
