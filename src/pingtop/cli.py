@@ -13,6 +13,7 @@ from pingtop.models import ExportFormat, SessionConfig
 from pingtop.session import PingSession, infer_export_format
 from pingtop.summary import render_summary
 
+
 def _configure_logging(log_level: str, log_file: str | None) -> None:
     level = getattr(logging, log_level.upper(), logging.INFO)
     logging.basicConfig(

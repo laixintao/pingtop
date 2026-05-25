@@ -4,8 +4,8 @@ from typing import cast
 
 from rich.text import Text
 from textual.widgets import Static
-import pingtop.models
 
+import pingtop.models
 from pingtop.widgets.trend import render_detailed_trend_graph
 
 
