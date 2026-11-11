@@ -27,9 +27,19 @@ def _read_hosts_file(path: str | None) -> list[str]:
     if not path:
         return []
     file_path = Path(path)
+    try:
+        text = file_path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise click.ClickException(
+            f"Cannot read hosts file '{path}': {exc.strerror or exc}"
+        ) from exc
+    except UnicodeDecodeError as exc:
+        raise click.ClickException(
+            f"Cannot read hosts file '{path}': not valid UTF-8 ({exc})"
+        ) from exc
     return [
         line.strip()
-        for line in file_path.read_text(encoding="utf-8").splitlines()
+        for line in text.splitlines()
         if line.strip() and not line.strip().startswith("#")
     ]
 
