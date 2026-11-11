@@ -91,6 +91,19 @@ def test_cli_rejects_invalid_cidr(monkeypatch) -> None:
     assert "Invalid network or host" in result.output
 
 
+def test_cli_rejects_non_utf8_hosts_file(tmp_path) -> None:
+    hosts_file = tmp_path / "hosts.txt"
+    hosts_file.write_bytes(b"1.1.1.1\n\xff\xfe bad\n")
+
+    runner = CliRunner()
+    result = runner.invoke(cli.main, ["8.8.8.8", "--hosts-file", str(hosts_file)])
+
+    assert result.exit_code != 0
+    assert "hosts file" in result.output
+    assert "UTF-8" in result.output
+    assert isinstance(result.exception, SystemExit)
+
+
 def test_cli_requires_explicit_export_format_for_ambiguous_extension(tmp_path, monkeypatch) -> None:
     class FakeApp:
         def __init__(self, session, engine) -> None:
